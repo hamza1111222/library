@@ -20,9 +20,16 @@ class UpdateBookRequest extends FormRequest
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
-    {
-        return [
-            
-        ];
-    }
+{
+    return [
+        'ISBN' => "sometimes|string|size:13|unique:books,ISBN,{$this->route('books')}",
+        'title' => 'sometimes|string|max:70',
+        'price' => ['sometimes','numeric','min:0','max:99.99'],
+        'mortgage' => ['sometimes','numeric','min:0','max:9999.99'],
+        'authorship_date' => 'sometimes|date',
+        'category_id' => 'sometimes|exists:categories,id',
+        'cover' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+    ];
+}
+
 }

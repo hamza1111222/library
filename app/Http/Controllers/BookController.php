@@ -53,7 +53,24 @@ class BookController extends Controller
      */
     public function update(UpdateBookRequest $request, Book $book)
     {
+        // Keep old cover to remove if replaced
+        $oldCover = $book->cover;
+
         $book->update($request->all());
+
+        if ($request->hasFile('cover')) {
+            // delete old cover file if exists
+            if ($oldCover && Storage::exists('book-images/' . $oldCover)) {
+                Storage::delete('book-images/' . $oldCover);
+            }
+
+            $file = $request->file('cover');
+            $filename = "{$book->ISBN}." . $file->extension();
+            Storage::putFileAs('book-images', $file, $filename);
+            $book->cover = $filename;
+            $book->save();
+        }
+
         return ResponseHelper::success("تمت تعديل الكتاب", $book);
 
     }
@@ -63,6 +80,11 @@ class BookController extends Controller
      */
     public function destroy(Book $book)
     {
+        // delete cover file if exists
+        if ($book->cover && Storage::exists('book-images/' . $book->cover)) {
+            Storage::delete('book-images/' . $book->cover);
+        }
+
         $book->delete();
         return ResponseHelper::success("تمت حذف الكتاب", $book);
     }
